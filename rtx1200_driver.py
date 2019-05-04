@@ -30,6 +30,7 @@ class RTX1200Controller():
         self.passwd = passwd
         self.admin_passwd = admin_passwd
         self.is_admin = False
+        self.logfile = None
 
     def login(self):
         if self.proto == CliProtocol.TELNET:
@@ -38,14 +39,14 @@ class RTX1200Controller():
             self.p.expect(r'Password:')
             self.p.sendline('')
         elif self.proto == CliProtocol.SSH:
-            print('using ssh')
-            print('ssh %s -p %d -l %s' % (self.address, self.port, self.user))
             self.p = pexpect.spawn('ssh %s -p %d -l %s' % (self.address, self.port, self.user), echo=True)
-            self.p.logfile_read = sys.stdout.buffer
+            if self.logfile:
+                self.p.logfile_read = self.logfile
             self.p.expect(r'password:')
             self.p.sendline(self.passwd)
         else:
             raise UnknownProtocolError()
+        self.p.expect('RTX1200 (Rev.[0-9.]+)')
         self.p.expect(r'> ')
 
     def admin(self):
@@ -69,3 +70,15 @@ class RTX1200Controller():
         self.p.sendline('exit')
         self.p.wait()
         self.p.close()
+
+    # Gets PP(Point-to-Point) interface local IP.
+    # Returns IP string if success, empty str if failed.
+    def get_pp_ip(self, pp_num=1):
+        self.p.sendline('show status pp %d' % pp_num)
+        result = self.p.expect([r'PP IP Address Local: ([0-9.]+),', 'Error:', '> '])
+        if result == 0:
+            # successfully got an IP
+            return self.p.match.group(1).decode()
+        else:
+            # error
+            return ''
