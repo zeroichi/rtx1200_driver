@@ -1,0 +1,20 @@
+{
+  "router": {
+    "address": "192.168.11.1",
+    "username": "zeroichi",
+    "password": "hogepiyo",
+    "admin_password": "foobar"
+  },
+  "targets": {
+    "maria": {
+      "interface": "lan1",
+      "mac_addr": "90:AA:BB:11:22:33",
+      "address": "192.168.11.123"
+    },
+    "hayate": {
+      "interface": "lan2",
+      "mac_addr": "90:AA:BB:11:22:34",
+      "address": "192.168.12.124"
+    }
+  }
+}
